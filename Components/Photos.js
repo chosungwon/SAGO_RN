@@ -1,35 +1,45 @@
-import React from 'react';
+import React, { Component } from 'react';
 import {
   View,
   Image,
   Text,
-  FlatList, // here
+  FlatList
 } from 'react-native';
 
-export default class App extends React.Component {
+class Photos extends Component {
 
   state = {
-    data: [],
-    page: 1 // here
+    data: []
   }
 
   _renderItem = ({item}) => (
       <View style={{borderBottomWidth:1, marginTop: 20}}>
-        <Image source={{ uri: item.url }} style={{ height: 200}} />
-        <Text>{item.title}</Text>
-        <Text>{item.id}</Text>
+        <Image source={{ uri: `https://myuksal-saso.s3.ap-northeast-2.amazonaws.com${item.photo_small}` }} style={{ height: 500}} />\
+        <Text>{item.user.name}</Text>
+        <Text>ISO = {item.iso}</Text>
       </View>
   );
 
   // _getData 함수 수정
+// ?lastpk=${this.state.data[this.state.data.length - 1].pk}
   _getData = () => {
-    const url = 'https://jsonplaceholder.typicode.com/photos?_limit=10&_page=' + this.state.page;
+    const url = `https://test.projectsago.com/api/board/public`;
     fetch(url)
         .then(r => r.json())
         .then(data => {
           this.setState({
-            data: this.state.data.concat(data),
-            page: this.state.page + 1
+            data: this.state.data.concat(data.data)
+          })
+        });
+  }
+
+  _ScrollgetData = () => {
+    const url = `https://test.projectsago.com/api/board/public?lastpk=${this.state.data[this.state.data.length - 1].pk}`;
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+          this.setState({
+            data: this.state.data.concat(data.data)
           })
         });
   }
@@ -40,7 +50,7 @@ export default class App extends React.Component {
 
   // here
   _handleLoadMore = () => {
-    this._getData();
+    this._ScrollgetData();
   }
 
   render() {
@@ -48,10 +58,12 @@ export default class App extends React.Component {
         <FlatList
             data={this.state.data}
             renderItem={this._renderItem}
-            keyExtractor={(item, index) => item.id}
+            // keyExtractor={(item) => item.id}
             onEndReached={this._handleLoadMore}
             onEndReachedThreshold={1}
         />
     );
   }
 }
+
+export default Photos;
